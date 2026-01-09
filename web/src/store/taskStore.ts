@@ -46,7 +46,9 @@ interface TaskStore {
 
   // Export
   exportMarkdown: string | null;
-  exportPRDraft: (taskId: string) => Promise<string>;
+  exportFilePath: string | null;
+  exportFileError: string | null;
+  exportPRDraft: (taskId: string) => Promise<api.ExportResult>;
   clearExport: () => void;
 }
 
@@ -155,12 +157,18 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
 
   // Export
   exportMarkdown: null,
+  exportFilePath: null,
+  exportFileError: null,
 
   exportPRDraft: async (taskId) => {
     const result = await api.exportPRDraft(taskId);
-    set({ exportMarkdown: result.markdown });
-    return result.markdown;
+    set({
+      exportMarkdown: result.markdown,
+      exportFilePath: result.filePath,
+      exportFileError: result.fileError,
+    });
+    return result;
   },
 
-  clearExport: () => set({ exportMarkdown: null }),
+  clearExport: () => set({ exportMarkdown: null, exportFilePath: null, exportFileError: null }),
 }));

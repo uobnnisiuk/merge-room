@@ -12,16 +12,8 @@ This project explores a workflow where:
 ```bash
 # Prerequisites: Node.js 20+, pnpm, C++ build tools (for native SQLite module)
 
-# Install dependencies
 cd web
 pnpm install
-
-# Build native SQLite module (if needed)
-# pnpm runs this automatically, but if it fails:
-cd node_modules/.pnpm/better-sqlite3*/node_modules/better-sqlite3 && npm run build-release
-
-# Start development server (frontend + backend)
-cd /path/to/merge-room/web
 pnpm dev
 ```
 
@@ -29,6 +21,17 @@ Open http://localhost:5173 in your browser.
 
 - Frontend: http://localhost:5173 (Vite)
 - Backend: http://localhost:3001 (Express)
+
+### Demo Repository
+
+To quickly test the application with sample data:
+
+```bash
+cd web
+pnpm demo:seed   # Creates docs/demo-repo with staged/unstaged/untracked changes
+```
+
+Then create a Task using the path shown in the output (e.g., `/path/to/merge-room/docs/demo-repo`).
 
 ## Features
 
@@ -135,6 +138,16 @@ Tables:
 - `comments` - Thread comments
 - `anchors` - Code line references
 - `decisions` - Decision documents
+
+### Anchor Line Numbers
+
+When selecting code in the diff viewer, anchors store:
+- `filePath` - The file path from the diff
+- `hunkIndex` - Index of the hunk within the file (0-based)
+- `startLine` / `endLine` - Line indices within the hunk's lines array (0-based, inclusive)
+- `excerpt` - The selected diff text with +/- prefixes
+
+These are **display indices** within the parsed diff structure, not source file line numbers.
 
 ## License
 

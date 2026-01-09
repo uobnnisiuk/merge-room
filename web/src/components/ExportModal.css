@@ -66,6 +66,14 @@
   color: var(--text-muted);
 }
 
+.save-note.save-success {
+  color: var(--success-color);
+}
+
+.save-note.save-error {
+  color: var(--error-color);
+}
+
 .export-preview {
   flex: 1;
   overflow: auto;

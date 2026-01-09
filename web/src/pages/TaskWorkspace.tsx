@@ -22,6 +22,8 @@ export function TaskWorkspace() {
     fetchDiff,
     refreshDiff,
     exportMarkdown,
+    exportFilePath,
+    exportFileError,
     exportPRDraft,
     clearExport,
   } = useTaskStore();
@@ -147,6 +149,8 @@ export function TaskWorkspace() {
       {showExport && exportMarkdown && (
         <ExportModal
           markdown={exportMarkdown}
+          filePath={exportFilePath}
+          fileError={exportFileError}
           onClose={() => {
             setShowExport(false);
             clearExport();

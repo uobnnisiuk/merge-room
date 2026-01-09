@@ -8,7 +8,8 @@ const PR_DRAFTS_DIR = path.resolve(__dirname, '../../../docs/pr-drafts');
 
 export interface ExportResult {
   markdown: string;
-  filePath: string;
+  filePath: string | null;
+  fileError: string | null;
 }
 
 /**
@@ -122,19 +123,23 @@ export function generatePRDraft(task: TaskDetail): string {
 
 /**
  * Export task to markdown file
+ * Returns markdown even if file write fails
  */
 export function exportPRDraft(task: TaskDetail): ExportResult {
   const markdown = generatePRDraft(task);
-
-  // Ensure directory exists
-  if (!fs.existsSync(PR_DRAFTS_DIR)) {
-    fs.mkdirSync(PR_DRAFTS_DIR, { recursive: true });
-  }
-
   const fileName = `${task.id}.md`;
   const filePath = path.join(PR_DRAFTS_DIR, fileName);
 
-  fs.writeFileSync(filePath, markdown, 'utf-8');
-
-  return { markdown, filePath };
+  try {
+    // Ensure directory exists
+    if (!fs.existsSync(PR_DRAFTS_DIR)) {
+      fs.mkdirSync(PR_DRAFTS_DIR, { recursive: true });
+    }
+    fs.writeFileSync(filePath, markdown, 'utf-8');
+    return { markdown, filePath, fileError: null };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown write error';
+    console.error(`[export] Failed to write ${filePath}: ${errorMsg}`);
+    return { markdown, filePath: null, fileError: errorMsg };
+  }
 }
