@@ -1,0 +1,210 @@
+.diff-viewer {
+  padding: 0;
+}
+
+.diff-viewer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: var(--text-secondary);
+}
+
+.diff-viewer-empty .error {
+  color: var(--error-color);
+}
+
+.selection-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--accent-color);
+  color: white;
+  font-size: 13px;
+}
+
+.selection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.selection-actions button {
+  padding: 4px 12px;
+  font-size: 12px;
+}
+
+.selection-actions .secondary {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+}
+
+.diff-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.diff-section {
+  margin-bottom: 0;
+}
+
+.section-header {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.diff-file {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-header:hover {
+  background: var(--bg-tertiary);
+}
+
+.collapse-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  width: 12px;
+}
+
+.file-status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.file-status-new {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-color);
+}
+
+.file-status-deleted {
+  background: rgba(244, 67, 54, 0.2);
+  color: var(--error-color);
+}
+
+.file-status-modified {
+  background: rgba(74, 158, 255, 0.2);
+  color: var(--accent-color);
+}
+
+.file-status-binary {
+  background: rgba(158, 158, 158, 0.2);
+  color: var(--text-muted);
+}
+
+.file-path {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.file-content {
+  background: var(--bg-primary);
+}
+
+.diff-hunk {
+  border-top: 1px solid var(--border-color);
+}
+
+.diff-line {
+  display: flex;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.diff-line:hover {
+  background: var(--bg-tertiary);
+}
+
+.diff-line.selected {
+  background: var(--selection-bg) !important;
+}
+
+.diff-line-add {
+  background: var(--diff-add-bg);
+}
+
+.diff-line-add .line-content {
+  color: var(--diff-add-text);
+}
+
+.diff-line-del {
+  background: var(--diff-del-bg);
+}
+
+.diff-line-del .line-content {
+  color: var(--diff-del-text);
+}
+
+.diff-line-hunk {
+  background: var(--diff-hunk-bg);
+  cursor: default;
+}
+
+.diff-line-hunk .line-content {
+  color: var(--diff-hunk-text);
+}
+
+.diff-line-info {
+  background: var(--bg-secondary);
+  cursor: default;
+}
+
+.diff-line-info .line-content {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.line-number {
+  width: 40px;
+  padding: 0 8px;
+  text-align: right;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.line-prefix {
+  width: 20px;
+  text-align: center;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.line-content {
+  flex: 1;
+  padding-right: 16px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}

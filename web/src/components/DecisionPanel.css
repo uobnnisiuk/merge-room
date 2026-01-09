@@ -1,0 +1,137 @@
+.decision-panel {
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.decision-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.decision-header:hover {
+  background: var(--bg-tertiary);
+}
+
+.expand-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.decision-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.complete-badge {
+  margin-left: auto;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-color);
+}
+
+.decision-content {
+  padding: 0 16px 16px;
+}
+
+.status-section {
+  margin-bottom: 16px;
+}
+
+.status-section > label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.status-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.status-btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.status-btn:hover:not(:disabled) {
+  background: var(--border-color);
+}
+
+.status-btn.active {
+  border-color: transparent;
+}
+
+.status-btn.active.status-draft {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.status-btn.active.status-review {
+  background: rgba(255, 152, 0, 0.2);
+  color: var(--warning-color);
+}
+
+.status-btn.active.status-approved {
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-color);
+}
+
+.status-btn.active.status-archived {
+  background: rgba(158, 158, 158, 0.2);
+  color: var(--text-muted);
+}
+
+.status-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.status-error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--error-color);
+}
+
+.status-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.decision-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.field .required {
+  color: var(--error-color);
+}
+
+.field textarea {
+  width: 100%;
+  min-height: 60px;
+}
+
+.save-btn {
+  margin-top: 8px;
+}
