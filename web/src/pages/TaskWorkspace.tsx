@@ -5,6 +5,7 @@ import { DiffViewer } from '../components/DiffViewer';
 import { ThreadPanel } from '../components/ThreadPanel';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { ExportModal } from '../components/ExportModal';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './TaskWorkspace.css';
 
 export function TaskWorkspace() {
@@ -110,12 +111,18 @@ export function TaskWorkspace() {
 
       <div className="workspace-content">
         <div className="left-pane">
-          <DiffViewer
-            diff={diff}
-            loading={diffLoading}
-            error={diffError}
-            onRefresh={handleRefreshDiff}
-          />
+          <ErrorBoundary
+            fallbackTitle="Diff parsing error"
+            rawContent={diff?.diffText}
+            key={diff?.id}
+          >
+            <DiffViewer
+              diff={diff}
+              loading={diffLoading}
+              error={diffError}
+              onRefresh={handleRefreshDiff}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="right-pane">

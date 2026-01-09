@@ -22,6 +22,20 @@ Open http://localhost:5173 in your browser.
 - Frontend: http://localhost:5173 (Vite)
 - Backend: http://localhost:3001 (Express)
 
+### Troubleshooting: Native SQLite Module
+
+If you get "Could not locate the bindings file" error, rebuild the native module:
+
+```bash
+cd web
+pnpm sqlite:rebuild
+```
+
+This requires C++ build tools:
+- **Linux**: `build-essential` package
+- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+- **Windows**: Visual Studio Build Tools with "Desktop development with C++"
+
 ### Demo Repository
 
 To quickly test the application with sample data:
@@ -32,6 +46,17 @@ pnpm demo:seed   # Creates docs/demo-repo with staged/unstaged/untracked changes
 ```
 
 Then create a Task using the path shown in the output (e.g., `/path/to/merge-room/docs/demo-repo`).
+
+### Running E2E Tests
+
+Verify the core workflow programmatically:
+
+```bash
+cd web
+pnpm test:e2e
+```
+
+This creates a demo repo, starts the server, and tests: Task → Diff → Comment with Anchor → Decision → Export.
 
 ## Features
 
