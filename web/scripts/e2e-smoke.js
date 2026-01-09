@@ -73,7 +73,7 @@ function stopServer() {
   }
 }
 
-async function api(method, path, body = null) {
+async function api(method, path, body = null, expectFailure = false) {
   const options = {
     method,
     headers: { 'Content-Type': 'application/json' },
@@ -83,6 +83,10 @@ async function api(method, path, body = null) {
   }
   const res = await fetch(`${API_BASE}${path}`, options);
   const data = await res.json();
+  if (expectFailure) {
+    // Return both status and data for negative tests
+    return { status: res.status, ok: res.ok, data };
+  }
   if (!res.ok) {
     throw new Error(`API ${method} ${path} failed: ${data.error || res.status}`);
   }
@@ -149,8 +153,24 @@ async function runTests() {
   });
   console.log('[e2e] Created private note');
 
-  // Step 7: Update decision
-  console.log('\n[e2e] Step 7: Updating decision...');
+  // Step 7: Negative approval test - try to approve without decision
+  console.log('\n[e2e] Step 7: Testing negative approval (no decision)...');
+  // First move task to review (allowed without decision)
+  await api('PATCH', `/tasks/${task.id}/status`, { status: 'review' });
+  // Try to approve without decision - should fail with 400
+  const failedApproval = await api('PATCH', `/tasks/${task.id}/status`, { status: 'approved' }, true);
+  assert.equal(failedApproval.ok, false, 'Approval without decision should fail');
+  assert.equal(failedApproval.status, 400, 'Should return 400 for missing decision');
+  assert(
+    failedApproval.data.error.includes('Decision fields'),
+    'Error should mention decision fields requirement'
+  );
+  console.log('[e2e] Negative approval test passed - correctly rejected');
+  // Reset status back to draft for subsequent tests
+  await api('PATCH', `/tasks/${task.id}/status`, { status: 'draft' });
+
+  // Step 8: Update decision
+  console.log('\n[e2e] Step 8: Updating decision...');
   const decision = await api('PUT', `/tasks/${task.id}/decision`, {
     summary: 'Add math utility functions for multiplication and division',
     rationale: 'These operations are commonly needed and will reduce code duplication',
@@ -160,24 +180,23 @@ async function runTests() {
   assert(decision.summary, 'Decision should have summary');
   console.log('[e2e] Decision updated');
 
-  // Step 8: Try to approve without decision (should fail) - but we already have decision
-  // Instead, test status transition to review first
-  console.log('\n[e2e] Step 8: Testing status transitions...');
+  // Step 9: With decision filled, approval should now succeed
+  console.log('\n[e2e] Step 9: Testing status transitions with decision...');
   const reviewTask = await api('PATCH', `/tasks/${task.id}/status`, { status: 'review' });
   assert.equal(reviewTask.status, 'review', 'Status should be review');
 
   const approvedTask = await api('PATCH', `/tasks/${task.id}/status`, { status: 'approved' });
   assert.equal(approvedTask.status, 'approved', 'Status should be approved');
-  console.log('[e2e] Status transitions verified');
+  console.log('[e2e] Status transitions verified - approval succeeded with decision');
 
-  // Step 9: Export PR draft
-  console.log('\n[e2e] Step 9: Exporting PR draft...');
+  // Step 10: Export PR draft
+  console.log('\n[e2e] Step 10: Exporting PR draft...');
   const exportResult = await api('POST', `/tasks/${task.id}/export`);
   assert(exportResult.markdown, 'Export should have markdown');
   console.log('[e2e] Export generated, length:', exportResult.markdown.length);
 
-  // Step 10: Verify export content
-  console.log('\n[e2e] Step 10: Verifying export content...');
+  // Step 11: Verify export content
+  console.log('\n[e2e] Step 11: Verifying export content...');
   const md = exportResult.markdown;
 
   // Decision fields should be present
@@ -195,8 +214,8 @@ async function runTests() {
 
   console.log('[e2e] Export content verified');
 
-  // Step 11: Verify export file exists
-  console.log('\n[e2e] Step 11: Verifying export file...');
+  // Step 12: Verify export file exists
+  console.log('\n[e2e] Step 12: Verifying export file...');
   const exportFilePath = join(PR_DRAFTS_DIR, `${task.id}.md`);
   assert(existsSync(exportFilePath), `Export file should exist at ${exportFilePath}`);
   const fileStat = statSync(exportFilePath);

@@ -24,16 +24,16 @@ Open http://localhost:5173 in your browser.
 
 ### Troubleshooting: Native SQLite Module
 
-If you get "Could not locate the bindings file" error, rebuild the native module:
+If you get "Could not locate the bindings file" error after `pnpm install`, the native module needs to be compiled for your platform:
 
 ```bash
 cd web
 pnpm sqlite:rebuild
 ```
 
-This requires C++ build tools:
-- **Linux**: `build-essential` package
-- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+This runs `npm run build-release` inside `node_modules/better-sqlite3` and requires C++ build tools:
+- **Linux**: `sudo apt install build-essential` (or equivalent)
+- **macOS**: `xcode-select --install`
 - **Windows**: Visual Studio Build Tools with "Desktop development with C++"
 
 ### Demo Repository
@@ -150,7 +150,7 @@ This is a spike/proof-of-concept. The following are intentionally not implemente
 - **Syntax highlighting** - Plain monospace diff display
 - **Image/binary diffs** - Text only
 
-See `docs/notes.md` for future considerations.
+See `docs/notes.md` for architecture notes and `docs/decision.md` for investment decision criteria.
 
 ## Database
 
@@ -166,13 +166,16 @@ Tables:
 
 ### Anchor Line Numbers
 
-When selecting code in the diff viewer, anchors store:
-- `filePath` - The file path from the diff
-- `hunkIndex` - Index of the hunk within the file (0-based)
-- `startLine` / `endLine` - Line indices within the hunk's lines array (0-based, inclusive)
-- `excerpt` - The selected diff text with +/- prefixes
+When selecting code in the diff viewer, anchors store **display-relative** indices:
 
-These are **display indices** within the parsed diff structure, not source file line numbers.
+| Field | Description |
+|-------|-------------|
+| `filePath` | The file path from the diff header |
+| `hunkIndex` | Index of the hunk within the file (0-based) |
+| `startLine` / `endLine` | Line indices within the hunk's lines array (0-based, inclusive) |
+| `excerpt` | The selected diff text with `+`/`-` prefixes preserved |
+
+**Important**: These are indices within the parsed diff structure, not source file line numbers. If the working tree changes and you refresh the diff, existing anchors may point to different lines or become invalid.
 
 ## License
 
