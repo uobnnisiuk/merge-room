@@ -4,7 +4,11 @@
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {}
   },
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y python3 make g++ && corepack enable && corepack prepare pnpm@10.25.0 --activate && cd web && pnpm install",
+  "postCreateCommand": {
+    "install-build-tools": "sudo apt-get update && sudo apt-get install -y python3 make g++",
+    "setup-pnpm": "corepack enable && corepack prepare pnpm@10.25.0 --activate",
+    "install-deps": "cd ${containerWorkspaceFolder}/web && pnpm install"
+  },
   "forwardPorts": [5173, 3001],
   "portsAttributes": {
     "5173": {
