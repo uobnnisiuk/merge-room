@@ -5,6 +5,7 @@ import { DiffViewer } from '../components/DiffViewer';
 import { ThreadPanel } from '../components/ThreadPanel';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { ExportModal } from '../components/ExportModal';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import './TaskWorkspace.css';
 
 export function TaskWorkspace() {
@@ -22,6 +23,8 @@ export function TaskWorkspace() {
     fetchDiff,
     refreshDiff,
     exportMarkdown,
+    exportFilePath,
+    exportFileError,
     exportPRDraft,
     clearExport,
   } = useTaskStore();
@@ -108,12 +111,18 @@ export function TaskWorkspace() {
 
       <div className="workspace-content">
         <div className="left-pane">
-          <DiffViewer
-            diff={diff}
-            loading={diffLoading}
-            error={diffError}
-            onRefresh={handleRefreshDiff}
-          />
+          <ErrorBoundary
+            fallbackTitle="Diff parsing error"
+            rawContent={diff?.diffText}
+            key={diff?.id}
+          >
+            <DiffViewer
+              diff={diff}
+              loading={diffLoading}
+              error={diffError}
+              onRefresh={handleRefreshDiff}
+            />
+          </ErrorBoundary>
         </div>
 
         <div className="right-pane">
@@ -147,6 +156,8 @@ export function TaskWorkspace() {
       {showExport && exportMarkdown && (
         <ExportModal
           markdown={exportMarkdown}
+          filePath={exportFilePath}
+          fileError={exportFileError}
           onClose={() => {
             setShowExport(false);
             clearExport();

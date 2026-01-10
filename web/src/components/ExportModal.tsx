@@ -3,10 +3,12 @@ import './ExportModal.css';
 
 interface ExportModalProps {
   markdown: string;
+  filePath: string | null;
+  fileError: string | null;
   onClose: () => void;
 }
 
-export function ExportModal({ markdown, onClose }: ExportModalProps) {
+export function ExportModal({ markdown, filePath, fileError, onClose }: ExportModalProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -33,9 +35,19 @@ export function ExportModal({ markdown, onClose }: ExportModalProps) {
           <button className="primary" onClick={handleCopy}>
             {copied ? 'Copied!' : 'Copy to Clipboard'}
           </button>
-          <span className="save-note">
-            Also saved to docs/pr-drafts/
-          </span>
+          {filePath ? (
+            <span className="save-note save-success">
+              Saved to docs/pr-drafts/
+            </span>
+          ) : fileError ? (
+            <span className="save-note save-error">
+              File save failed: {fileError}
+            </span>
+          ) : (
+            <span className="save-note">
+              Markdown generated (file not saved)
+            </span>
+          )}
         </div>
 
         <div className="export-preview">

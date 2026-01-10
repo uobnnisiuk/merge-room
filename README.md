@@ -12,16 +12,8 @@ This project explores a workflow where:
 ```bash
 # Prerequisites: Node.js 20+, pnpm, C++ build tools (for native SQLite module)
 
-# Install dependencies
 cd web
 pnpm install
-
-# Build native SQLite module (if needed)
-# pnpm runs this automatically, but if it fails:
-cd node_modules/.pnpm/better-sqlite3*/node_modules/better-sqlite3 && npm run build-release
-
-# Start development server (frontend + backend)
-cd /path/to/merge-room/web
 pnpm dev
 ```
 
@@ -29,6 +21,42 @@ Open http://localhost:5173 in your browser.
 
 - Frontend: http://localhost:5173 (Vite)
 - Backend: http://localhost:3001 (Express)
+
+### Troubleshooting: Native SQLite Module
+
+If you get "Could not locate the bindings file" error after `pnpm install`, the native module needs to be compiled for your platform:
+
+```bash
+cd web
+pnpm sqlite:rebuild
+```
+
+This runs `npm run build-release` inside `node_modules/better-sqlite3` and requires C++ build tools:
+- **Linux**: `sudo apt install build-essential` (or equivalent)
+- **macOS**: `xcode-select --install`
+- **Windows**: Visual Studio Build Tools with "Desktop development with C++"
+
+### Demo Repository
+
+To quickly test the application with sample data:
+
+```bash
+cd web
+pnpm demo:seed   # Creates docs/demo-repo with staged/unstaged/untracked changes
+```
+
+Then create a Task using the path shown in the output (e.g., `/path/to/merge-room/docs/demo-repo`).
+
+### Running E2E Tests
+
+Verify the core workflow programmatically:
+
+```bash
+cd web
+pnpm test:e2e
+```
+
+This creates a demo repo, starts the server, and tests: Task → Diff → Comment with Anchor → Decision → Export.
 
 ## Features
 
@@ -122,7 +150,7 @@ This is a spike/proof-of-concept. The following are intentionally not implemente
 - **Syntax highlighting** - Plain monospace diff display
 - **Image/binary diffs** - Text only
 
-See `docs/notes.md` for future considerations.
+See `docs/notes.md` for architecture notes and `docs/decision.md` for investment decision criteria.
 
 ## Database
 
@@ -135,6 +163,28 @@ Tables:
 - `comments` - Thread comments
 - `anchors` - Code line references
 - `decisions` - Decision documents
+
+### Anchor Line Numbers
+
+When selecting code in the diff viewer, anchors store **display-relative** indices:
+
+| Field | Description |
+|-------|-------------|
+| `filePath` | The file path from the diff header |
+| `hunkIndex` | Index of the hunk within the file (0-based) |
+| `startLine` / `endLine` | Line indices within the hunk's lines array (0-based, inclusive) |
+| `excerpt` | The selected diff text with `+`/`-` prefixes preserved |
+
+**Important**: These are indices within the parsed diff structure, not source file line numbers. If the working tree changes and you refresh the diff, existing anchors may point to different lines or become invalid.
+
+## 日本語ドキュメント
+
+Japanese documentation is available in [docs/ja/](docs/ja/):
+
+- [README.ja.md](docs/ja/README.ja.md) - 概要・導線
+- [runbook.ja.md](docs/ja/runbook.ja.md) - クイックスタート・トラブルシューティング
+- [architecture.ja.md](docs/ja/architecture.ja.md) - UI構造・データモデル・API
+- [decision.ja.md](docs/ja/decision.ja.md) - 検証仮説・投資判断
 
 ## License
 

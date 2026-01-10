@@ -85,7 +85,8 @@ export async function updateDecision(taskId: string, data: UpdateDecisionRequest
 // Export
 export interface ExportResult {
   markdown: string;
-  filePath: string;
+  filePath: string | null;
+  fileError: string | null;
 }
 
 export async function exportPRDraft(taskId: string): Promise<ExportResult> {
