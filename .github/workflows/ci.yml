@@ -14,21 +14,42 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 make g++
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        run: corepack prepare pnpm@10.25.0 --activate
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
         with:
-          version: 9
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('web/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm -C web install
+        working-directory: web
+        run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: pnpm -C web typecheck
+        working-directory: web
+        run: pnpm typecheck
 
       - name: Build
-        run: pnpm -C web build
+        working-directory: web
+        run: pnpm build
