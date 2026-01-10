@@ -6,6 +6,52 @@ This project explores a workflow where:
 - Fast iteration happens privately (with AI)
 - Discussion happens synchronously
 - Pull requests are used as a finalization step, not a discussion space
+- 
+## Why merge-room exists
+
+Modern development isn’t slowed down by typing code — it’s slowed down by **agreement cost**:
+reviewers and authors spend time reloading context, locating “what line are we talking about?”, and repeating
+clarifications across Slack/PR threads.
+
+**merge-room is a pre-PR workspace** that keeps the primary evidence (diff), discussion (anchored threads),
+and decision (explicit rationale) in one place, so reviewers can reach a decision with minimal friction.
+
+### The core idea: PR is the exit
+merge-room does not try to replace GitHub. It aims to restore pull requests to their intended role:
+**a finalization ledger**, not the main discussion venue.
+
+## What merge-room optimizes
+
+merge-room does **not** guarantee agreement in a single round (humans decide).
+Instead, it optimizes what we *can* control:
+
+- **Reduce per-round friction (aiming for near-zero):**
+  - One-screen workspace: diff (primary), threads, decision, export
+  - Discussion is anchored to diff excerpts (“this line, this hunk”), reducing “where/what” confusion
+  - Decision is explicit (Summary / Rationale / Risks / Rollback), reducing follow-up questions
+  - Private AI notes are separated from public discussion (and excluded from export)
+
+- **Make the 2nd/3rd iteration cheap:**
+  - The “coordinate system” (diff anchors + decision) keeps context stable across rounds
+  - Export produces a PR-ready draft that can be pasted with minimal edits
+
+### What we intentionally do NOT optimize (non-goals)
+
+To keep merge-room focused and durable, we intentionally avoid:
+
+- **“More real-time” as a feature** (chat apps & notification loops)
+- Replacing GitHub responsibilities (auth, permissions, merge controls, compliance/audit)
+- Real-time multi-user editing / Slack-style messaging inside the tool
+- IDE-as-a-platform (IDE integration, if any, stays thin: entry/exit only)
+
+## How we know it works (success signals)
+
+After using merge-room once for a real change, check:
+
+1. The exported Markdown was pasted into the PR description (ideally with minimal edits)
+2. Decision fields did not feel like “extra paperwork” (they reduced confusion)
+3. Review feedback shifted from repeated clarification to decision-making
+4. Anchored discussion stayed trustworthy across diff refresh (see anchor staleness notes)
 
 ## Quick Start
 
