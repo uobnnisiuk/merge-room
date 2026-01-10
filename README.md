@@ -177,6 +177,15 @@ When selecting code in the diff viewer, anchors store **display-relative** indic
 
 **Important**: These are indices within the parsed diff structure, not source file line numbers. If the working tree changes and you refresh the diff, existing anchors may point to different lines or become invalid.
 
+## 日本語ドキュメント
+
+Japanese documentation is available in [docs/ja/](docs/ja/):
+
+- [README.ja.md](docs/ja/README.ja.md) - 概要・導線
+- [runbook.ja.md](docs/ja/runbook.ja.md) - クイックスタート・トラブルシューティング
+- [architecture.ja.md](docs/ja/architecture.ja.md) - UI構造・データモデル・API
+- [decision.ja.md](docs/ja/decision.ja.md) - 検証仮説・投資判断
+
 ## License
 
 MIT

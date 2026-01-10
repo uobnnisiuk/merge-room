@@ -117,3 +117,7 @@ merge-room/
 │   └── notes.md          # future considerations
 └── .github/workflows/    # CI
 ```
+
+---
+
+日本語版: [architecture.ja.md](ja/architecture.ja.md)

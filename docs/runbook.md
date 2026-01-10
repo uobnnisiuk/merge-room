@@ -129,3 +129,7 @@ Expected output includes:
 | `pnpm typecheck` | Verify TypeScript |
 | `pnpm build` | Production build |
 | `pnpm sqlite:rebuild` | Recompile native SQLite module |
+
+---
+
+日本語版: [runbook.ja.md](ja/runbook.ja.md)

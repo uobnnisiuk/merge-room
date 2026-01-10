@@ -51,3 +51,7 @@ Anchoring comments to specific diff lines (hunk-relative indices) should:
 ## Decision
 
 Pending internal validation. See `docs/notes.md` for architecture notes.
+
+---
+
+日本語版: [decision.ja.md](ja/decision.ja.md)
