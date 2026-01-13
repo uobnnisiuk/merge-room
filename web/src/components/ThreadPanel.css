@@ -115,8 +115,10 @@
   overflow: hidden;
 }
 
-.comment-anchor > .mono {
-  display: block;
+.comment-anchor-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 10px;
   font-size: 11px;
   color: var(--accent-color);
@@ -124,8 +126,18 @@
 }
 
 .anchor-range {
-  float: right;
+  margin-left: auto;
   color: var(--text-muted);
+}
+
+.stale-label {
+  background: rgba(244, 67, 54, 0.15);
+  color: var(--error-color);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
 }
 
 .anchor-code {

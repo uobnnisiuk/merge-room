@@ -117,6 +117,12 @@ async function runTests() {
   assert(task.id, 'Task should have an ID');
   assert.equal(task.status, 'draft', 'Initial status should be draft');
 
+  // Step 3.1: Set PR URL
+  console.log('\n[e2e] Step 3.1: Setting PR URL...');
+  const prUrl = 'https://github.com/example/repo/pull/123';
+  const updatedTask = await api('PATCH', `/tasks/${task.id}`, { prUrl });
+  assert.equal(updatedTask.prUrl, prUrl, 'PR URL should be saved');
+
   // Step 4: Refresh diff
   console.log('\n[e2e] Step 4: Refreshing diff...');
   const diff = await api('POST', `/tasks/${task.id}/refresh-diff`);
@@ -153,11 +159,25 @@ async function runTests() {
   });
   console.log('[e2e] Created private note');
 
-  // Step 7: Negative approval test - try to approve without decision
-  console.log('\n[e2e] Step 7: Testing negative approval (no decision)...');
-  // First move task to review (allowed without decision)
+  // Step 7: Export draft
+  console.log('\n[e2e] Step 7: Exporting draft preview...');
+  const draftExport = await api('POST', `/tasks/${task.id}/export`);
+  assert(draftExport.markdown, 'Draft export should have markdown');
+  assert(draftExport.markdown.includes('DISCUSSION IN PROGRESS'), 'Draft export should include discussion banner');
+  assert(draftExport.markdown.includes('merge-room task:'), 'Draft export should include task link');
+  assert(draftExport.markdown.includes(prUrl), 'Draft export should include PR link');
+
+  // Step 8: Export review-ready
+  console.log('\n[e2e] Step 8: Exporting review description...');
   await api('PATCH', `/tasks/${task.id}/status`, { status: 'review' });
-  // Try to approve without decision - should fail with 400
+  const reviewExport = await api('POST', `/tasks/${task.id}/export`);
+  assert(reviewExport.markdown.includes('PR is the ledger'), 'Review export should include ledger banner');
+  assert(reviewExport.markdown.includes('merge-room task:'), 'Review export should include task link');
+  assert(reviewExport.markdown.includes(prUrl), 'Review export should include PR link');
+  assert.notEqual(draftExport.markdown, reviewExport.markdown, 'Draft and review exports should differ');
+
+  // Step 9: Negative approval test - try to approve without decision
+  console.log('\n[e2e] Step 9: Testing negative approval (no decision)...');
   const failedApproval = await api('PATCH', `/tasks/${task.id}/status`, { status: 'approved' }, true);
   assert.equal(failedApproval.ok, false, 'Approval without decision should fail');
   assert.equal(failedApproval.status, 400, 'Should return 400 for missing decision');
@@ -169,8 +189,8 @@ async function runTests() {
   // Reset status back to draft for subsequent tests
   await api('PATCH', `/tasks/${task.id}/status`, { status: 'draft' });
 
-  // Step 8: Update decision
-  console.log('\n[e2e] Step 8: Updating decision...');
+  // Step 10: Update decision
+  console.log('\n[e2e] Step 10: Updating decision...');
   const decision = await api('PUT', `/tasks/${task.id}/decision`, {
     summary: 'Add math utility functions for multiplication and division',
     rationale: 'These operations are commonly needed and will reduce code duplication',
@@ -180,8 +200,8 @@ async function runTests() {
   assert(decision.summary, 'Decision should have summary');
   console.log('[e2e] Decision updated');
 
-  // Step 9: With decision filled, approval should now succeed
-  console.log('\n[e2e] Step 9: Testing status transitions with decision...');
+  // Step 11: With decision filled, approval should now succeed
+  console.log('\n[e2e] Step 11: Testing status transitions with decision...');
   const reviewTask = await api('PATCH', `/tasks/${task.id}/status`, { status: 'review' });
   assert.equal(reviewTask.status, 'review', 'Status should be review');
 
@@ -189,14 +209,14 @@ async function runTests() {
   assert.equal(approvedTask.status, 'approved', 'Status should be approved');
   console.log('[e2e] Status transitions verified - approval succeeded with decision');
 
-  // Step 10: Export PR draft
-  console.log('\n[e2e] Step 10: Exporting PR draft...');
+  // Step 12: Export PR draft
+  console.log('\n[e2e] Step 12: Exporting PR draft...');
   const exportResult = await api('POST', `/tasks/${task.id}/export`);
   assert(exportResult.markdown, 'Export should have markdown');
   console.log('[e2e] Export generated, length:', exportResult.markdown.length);
 
-  // Step 11: Verify export content
-  console.log('\n[e2e] Step 11: Verifying export content...');
+  // Step 13: Verify export content
+  console.log('\n[e2e] Step 13: Verifying export content...');
   const md = exportResult.markdown;
 
   // Decision fields should be present
@@ -214,8 +234,8 @@ async function runTests() {
 
   console.log('[e2e] Export content verified');
 
-  // Step 12: Verify export file exists
-  console.log('\n[e2e] Step 12: Verifying export file...');
+  // Step 14: Verify export file exists
+  console.log('\n[e2e] Step 14: Verifying export file...');
   const exportFilePath = join(PR_DRAFTS_DIR, `${task.id}.md`);
   assert(existsSync(exportFilePath), `Export file should exist at ${exportFilePath}`);
   const fileStat = statSync(exportFilePath);

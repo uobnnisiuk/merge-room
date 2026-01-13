@@ -4,9 +4,9 @@ A workspace where code changes are discussed, reviewed, and *decided* before bec
 
 This project explores a workflow where:
 - Fast iteration happens privately (with AI)
-- Discussion happens synchronously
-- Pull requests are used as a finalization step, not a discussion space
-- 
+- Discussion happens synchronously in merge-room
+- Pull requests are used as a finalization ledger, not a discussion space
+- Draft PRs exist only as diff mirrors until the task is Ready
 ## Why merge-room exists
 
 Modern development isn’t slowed down by typing code — it’s slowed down by **agreement cost**:
@@ -19,6 +19,10 @@ and decision (explicit rationale) in one place, so reviewers can reach a decisio
 ### The core idea: PR is the exit
 merge-room does not try to replace GitHub. It aims to restore pull requests to their intended role:
 **a finalization ledger**, not the main discussion venue.
+
+To make this explicit, merge-room maps task status to product behavior:
+- **Draft** = Diff Mirror / Discussion (PR exists for diff viewing only)
+- **Review** = Ready / Exit (export becomes the final PR description)
 
 ## What merge-room optimizes
 
@@ -33,7 +37,8 @@ Instead, it optimizes what we *can* control:
 
 - **Make the 2nd/3rd iteration cheap:**
   - The “coordinate system” (diff anchors + decision) keeps context stable across rounds
-  - Export produces a PR-ready draft that can be pasted with minimal edits
+  - Export produces a PR-ready description with discussion banners + links
+  - Copy a Meeting Pack (Draft) or Ready Pack (Review) for Slack/Chat
 
 ### What we intentionally do NOT optimize (non-goals)
 
@@ -70,7 +75,12 @@ Open http://localhost:5173 in your browser.
 
 ### Troubleshooting: Native SQLite Module
 
-If you get "Could not locate the bindings file" error after `pnpm install`, the native module needs to be compiled for your platform:
+If you get "Could not locate the bindings file" error after `pnpm install`, the native module needs to be compiled for your platform.
+
+**Ubuntu build deps** (required for native rebuilds):
+```bash
+sudo apt install python3 make g++
+```
 
 ```bash
 cd web
@@ -109,6 +119,7 @@ This creates a demo repo, starts the server, and tests: Task → Diff → Commen
 ### Task Management
 - Create tasks linked to local git repositories
 - Track task status: Draft → Review → Approved → Archived
+- Store an optional PR URL for diff viewing + export linking
 
 ### Diff Viewer
 - View working tree changes (`git diff`)
@@ -130,10 +141,14 @@ This creates a demo repo, starts the server, and tests: Task → Diff → Commen
 - Required fields before approval: Summary, Rationale, Risks, Rollback
 - Status workflow enforcement
 
-### Export PR Draft
+### Export PR Description
 - Generate markdown suitable for PR description
-- Includes: overview, decision, code discussions
+- Includes discussion banner + merge-room task link (+ PR link if set)
 - Copies to clipboard + saves to `docs/pr-drafts/`
+
+### Share Kit
+- Copy Meeting Pack (Draft) or Ready Pack (Review) for Slack/Chat
+- Includes agenda + decision summary based on status
 
 ## Project Structure
 
@@ -179,6 +194,7 @@ merge-room/
 | GET | /api/tasks/:id/diff | Get latest diff |
 | POST | /api/tasks/:id/threads | Create thread |
 | POST | /api/tasks/threads/:id/comments | Add comment |
+| PATCH | /api/tasks/:id | Update task fields (e.g., prUrl) |
 | PATCH | /api/tasks/:id/status | Update status |
 | PUT | /api/tasks/:id/decision | Update decision |
 | POST | /api/tasks/:id/export | Export PR draft |

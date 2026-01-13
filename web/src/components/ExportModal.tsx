@@ -2,13 +2,14 @@ import { useState } from 'react';
 import './ExportModal.css';
 
 interface ExportModalProps {
+  title: string;
   markdown: string;
   filePath: string | null;
   fileError: string | null;
   onClose: () => void;
 }
 
-export function ExportModal({ markdown, filePath, fileError, onClose }: ExportModalProps) {
+export function ExportModal({ title, markdown, filePath, fileError, onClose }: ExportModalProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -25,7 +26,7 @@ export function ExportModal({ markdown, filePath, fileError, onClose }: ExportMo
     <div className="export-modal-overlay" onClick={onClose}>
       <div className="export-modal" onClick={(e) => e.stopPropagation()}>
         <div className="export-header">
-          <h2>PR Draft Export</h2>
+          <h2>{title}</h2>
           <button className="close-btn" onClick={onClose}>
             ×
           </button>

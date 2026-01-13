@@ -19,6 +19,10 @@ merge-room は、コード変更がプルリクエストになる前に議論・
 merge-room は GitHub を置き換えません。  
 Pull Request を本来の役割である **最終確定の台帳（出口）** に戻すためのツールです。
 
+ステータスに応じてプロダクトの振る舞いを固定します：
+- **Draft** = 議論中（Diff Mirror / Discussion）
+- **Review** = 投下（Ready / Exit）
+
 ---
 
 ### merge-room が最適化するもの
@@ -34,6 +38,7 @@ merge-room は「1回で同意が取れる」こと自体は保証しません�
 - **2回目・3回目の往復を安くする**
   - 「話題の座標」（引用アンカー＋決定）が残るため、再読・再説明が減る
   - Export が PR 本文として使えるため、出口で迷いにくい
+  - Draft/Review に応じた共有パック（Meeting/Ready）をコピーして共有できる
 
 ---
 
@@ -93,6 +98,8 @@ http://localhost:5173 を開く
 - **プライベートノート**: エクスポート（Export）に含まれないAIメモ用タブ
 - **決定（Decision）**: 承認（Approved）前に必須の4項目（Summary/Rationale/Risks/Rollback）
 - **PRドラフトエクスポート**: 決定＋スレッドをMarkdownで出力
+- **PR URL**: Diff閲覧用のPRリンクを保持
+- **共有パック**: DraftはMeeting Pack、ReviewはReady Pack
 
 ## ステータスワークフロー
 
