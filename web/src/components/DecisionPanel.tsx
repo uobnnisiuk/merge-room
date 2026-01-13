@@ -97,7 +97,7 @@ export function DecisionPanel({ taskId, task }: DecisionPanelProps) {
             {statusError && <div className="status-error">{statusError}</div>}
             {task.status !== 'approved' && !isComplete && (
               <div className="status-hint">
-                Complete all fields below to enable Approved status
+                Decision fields are optional during Draft/Review. Complete all fields to enable Approved.
               </div>
             )}
           </div>

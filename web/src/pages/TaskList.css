@@ -146,6 +146,37 @@
   color: var(--text-muted);
 }
 
+.task-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.task-link-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.open-pr-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.task-pr-url {
+  max-width: 360px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+.task-pr-empty {
+  color: var(--text-muted);
+}
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;

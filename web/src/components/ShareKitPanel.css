@@ -1,0 +1,58 @@
+.share-kit {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.share-kit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.share-kit-header h3 {
+  font-size: 14px;
+}
+
+.share-kit-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.share-kit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.share-kit-actions button {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.share-kit-toast {
+  font-size: 12px;
+  color: var(--success-color);
+}
+
+.share-kit-toast.error {
+  color: var(--error-color);
+}
+
+.share-kit-preview {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.share-kit-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}

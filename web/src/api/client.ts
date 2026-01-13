@@ -53,6 +53,13 @@ export async function updateTaskStatus(id: string, status: TaskStatus): Promise<
   });
 }
 
+export async function updateTask(id: string, data: { prUrl: string | null }): Promise<Task> {
+  return request(`/tasks/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
 // Diffs
 export async function refreshDiff(taskId: string): Promise<Diff> {
   return request(`/tasks/${taskId}/refresh-diff`, { method: 'POST' });
@@ -89,6 +96,9 @@ export interface ExportResult {
   fileError: string | null;
 }
 
-export async function exportPRDraft(taskId: string): Promise<ExportResult> {
-  return request(`/tasks/${taskId}/export`, { method: 'POST' });
+export async function exportPRDraft(taskId: string, clientBaseUrl?: string): Promise<ExportResult> {
+  return request(`/tasks/${taskId}/export`, {
+    method: 'POST',
+    body: clientBaseUrl ? JSON.stringify({ clientBaseUrl }) : undefined,
+  });
 }

@@ -6,6 +6,7 @@ export interface Task {
   description: string | null;
   repoPath: string;
   branchName: string | null;
+  prUrl: string | null;
   status: TaskStatus;
   createdAt: string;
   updatedAt: string;

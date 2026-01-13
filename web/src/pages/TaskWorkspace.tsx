@@ -5,6 +5,7 @@ import { DiffViewer } from '../components/DiffViewer';
 import { ThreadPanel } from '../components/ThreadPanel';
 import { DecisionPanel } from '../components/DecisionPanel';
 import { ExportModal } from '../components/ExportModal';
+import { ShareKitPanel } from '../components/ShareKitPanel';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import './TaskWorkspace.css';
 
@@ -27,11 +28,14 @@ export function TaskWorkspace() {
     exportFileError,
     exportPRDraft,
     clearExport,
+    updateTaskPrUrl,
   } = useTaskStore();
 
   const [activeTab, setActiveTab] = useState<'threads' | 'private'>('threads');
   const [showExport, setShowExport] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [prUrlInput, setPrUrlInput] = useState('');
+  const [savingPrUrl, setSavingPrUrl] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -40,6 +44,10 @@ export function TaskWorkspace() {
     }
     return () => clearCurrentTask();
   }, [id, fetchTaskDetail, fetchDiff, clearCurrentTask]);
+
+  useEffect(() => {
+    setPrUrlInput(currentTask?.prUrl || '');
+  }, [currentTask?.prUrl]);
 
   const handleRefreshDiff = async () => {
     if (id) {
@@ -60,6 +68,24 @@ export function TaskWorkspace() {
     }
   };
 
+  const handleSavePrUrl = async () => {
+    if (!currentTask) return;
+    setSavingPrUrl(true);
+    try {
+      await updateTaskPrUrl(currentTask.id, prUrlInput.trim() || null);
+    } catch (err) {
+      alert('Failed to save PR URL: ' + (err as Error).message);
+    } finally {
+      setSavingPrUrl(false);
+    }
+  };
+
+  const handleOpenPr = () => {
+    const url = prUrlInput.trim();
+    if (!url) return;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   if (currentTaskLoading) {
     return <div className="workspace-loading">Loading task...</div>;
   }
@@ -78,6 +104,13 @@ export function TaskWorkspace() {
   if (!currentTask) {
     return null;
   }
+
+  const exportLabel =
+    currentTask.status === 'draft'
+      ? 'Preview export'
+      : currentTask.status === 'review'
+      ? 'Export PR description'
+      : 'Export PR description';
 
   return (
     <div className="workspace">
@@ -104,7 +137,7 @@ export function TaskWorkspace() {
             {diffLoading ? 'Refreshing...' : 'Refresh Diff'}
           </button>
           <button className="primary" onClick={handleExport} disabled={exporting}>
-            {exporting ? 'Exporting...' : 'Export PR Draft'}
+            {exporting ? 'Exporting...' : exportLabel}
           </button>
         </div>
       </header>
@@ -126,6 +159,46 @@ export function TaskWorkspace() {
         </div>
 
         <div className="right-pane">
+          <div className="phase-banner">
+            <div className="phase-title">
+              {currentTask.status === 'draft' ? 'Diff Mirror / Discussion' : 'Ready / Exit'}
+            </div>
+            <div className="phase-text">
+              {currentTask.status === 'draft'
+                ? 'PR is for diff viewing only. Discuss in merge-room, not PR comments.'
+                : 'PR description is the ledger. Paste export and request review when ready.'}
+            </div>
+          </div>
+
+          <div className="pr-url-panel">
+            <label htmlFor="pr-url">PR URL</label>
+            <div className="pr-url-actions">
+              <input
+                id="pr-url"
+                type="url"
+                value={prUrlInput}
+                onChange={(event) => setPrUrlInput(event.target.value)}
+                placeholder="https://github.com/org/repo/pull/123"
+              />
+              <button
+                className="secondary"
+                onClick={handleSavePrUrl}
+                disabled={savingPrUrl || prUrlInput.trim() === (currentTask.prUrl || '')}
+              >
+                {savingPrUrl ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                className="secondary"
+                onClick={handleOpenPr}
+                disabled={!prUrlInput.trim()}
+              >
+                Open PR
+              </button>
+            </div>
+          </div>
+
+          <ShareKitPanel task={currentTask} />
+
           <div className="tab-bar">
             <button
               className={`tab ${activeTab === 'threads' ? 'active' : ''}`}
@@ -155,6 +228,7 @@ export function TaskWorkspace() {
 
       {showExport && exportMarkdown && (
         <ExportModal
+          title={currentTask.status === 'draft' ? 'Preview export' : 'PR description export'}
           markdown={exportMarkdown}
           filePath={exportFilePath}
           fileError={exportFileError}
