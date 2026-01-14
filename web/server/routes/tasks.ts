@@ -3,6 +3,7 @@ import * as tasksDb from '../db/tasks.js';
 import * as diffsDb from '../db/diffs.js';
 import * as threadsDb from '../db/threads.js';
 import * as decisionsDb from '../db/decisions.js';
+import * as anchorsDb from '../db/anchors.js';
 import { getWorkingTreeDiff, isGitRepo } from '../services/git.js';
 import { exportPRDraft, resolvePublicBaseUrl } from '../services/export.js';
 import type { CreateTaskRequest, CreateCommentRequest, UpdateDecisionRequest, TaskStatus } from '../db/types.js';
@@ -75,6 +76,13 @@ router.post('/:id/refresh-diff', (req: Request, res: Response) => {
     }
 
     const diff = diffsDb.saveDiff(task.id, result.output!);
+
+    // Check and update staleness for existing anchors
+    const staleCount = anchorsDb.checkAndUpdateStaleness(task.id, result.output!);
+    if (staleCount > 0) {
+      console.log(`[refresh-diff] ${staleCount} anchor(s) marked as stale for task ${task.id}`);
+    }
+
     res.json(diff);
   } catch (err) {
     console.error('Error refreshing diff:', err);

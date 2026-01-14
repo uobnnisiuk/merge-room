@@ -26,9 +26,12 @@ export function getThread(id: string): ThreadWithComments | null {
   for (const comment of comments) {
     comment.isPrivate = Boolean(comment.isPrivate);
     const anchor = db.prepare(`
-      SELECT id, commentId, filePath, hunkIndex, startLine, endLine, excerpt
+      SELECT id, commentId, filePath, hunkIndex, startLine, endLine, excerpt, stale
       FROM anchors WHERE commentId = ?
     `).get(comment.id) as Anchor | undefined;
+    if (anchor) {
+      anchor.stale = Boolean(anchor.stale);
+    }
     comment.anchor = anchor || null;
   }
 
@@ -60,7 +63,7 @@ export function addComment(threadId: string, data: CreateCommentRequest): Commen
       data.anchor.endLine,
       data.anchor.excerpt
     );
-    anchor = { id: anchorId, commentId, ...data.anchor };
+    anchor = { id: anchorId, commentId, ...data.anchor, stale: false };
   }
 
   // Touch parent task
