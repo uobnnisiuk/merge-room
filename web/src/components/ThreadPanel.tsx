@@ -16,6 +16,8 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [staleFilter, setStaleFilter] = useState<'all' | 'stale-only'>('all');
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   const parsedDiff = useMemo(() => {
     if (!diff?.diffText) return null;
@@ -35,12 +37,27 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
     return normalizeExcerpt(currentExcerpt) !== normalizeExcerpt(anchor.excerpt);
   };
 
+  const hasStaleAnchor = (thread: ThreadWithComments) => {
+    const firstComment = thread.comments.find((c) =>
+      isPrivateMode ? c.isPrivate : !c.isPrivate
+    );
+    return firstComment?.anchor && isAnchorStale(firstComment.anchor);
+  };
+
   // Filter threads based on mode
-  const filteredThreads = threads.filter((thread) =>
+  const baseFilteredThreads = threads.filter((thread) =>
     isPrivateMode
       ? thread.comments.some((c) => c.isPrivate)
       : thread.comments.some((c) => !c.isPrivate)
   );
+
+  // Apply stale filter
+  const filteredThreads = staleFilter === 'stale-only'
+    ? baseFilteredThreads.filter(hasStaleAnchor)
+    : baseFilteredThreads;
+
+  // Count stale threads
+  const staleCount = baseFilteredThreads.filter(hasStaleAnchor).length;
 
   const handleCreateThread = async () => {
     if (!newComment.trim()) return;
@@ -121,6 +138,18 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
         </div>
       </div>
 
+      {staleCount > 0 && (
+        <div className="stale-filter-bar">
+          <span className="stale-counter">STALE: {staleCount}</span>
+          <button
+            className={`stale-filter-toggle ${staleFilter === 'stale-only' ? 'active' : ''}`}
+            onClick={() => setStaleFilter(f => f === 'all' ? 'stale-only' : 'all')}
+          >
+            {staleFilter === 'stale-only' ? 'Show All' : 'Show Stale Only'}
+          </button>
+        </div>
+      )}
+
       <div className="threads-list">
         {filteredThreads.length === 0 ? (
           <div className="empty-threads">
@@ -132,7 +161,7 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
           </div>
         ) : (
           filteredThreads.map((thread) => (
-            <div key={thread.id} className="thread">
+            <div key={thread.id} className={`thread ${hasStaleAnchor(thread) ? 'has-stale' : ''}`}>
               {thread.comments
                 .filter((c) => (isPrivateMode ? c.isPrivate : !c.isPrivate))
                 .map((comment, index) => (
@@ -145,14 +174,27 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
                             L{comment.anchor.startLine}-{comment.anchor.endLine}
                           </span>
                           {isAnchorStale(comment.anchor) && (
-                            <span
-                              className="stale-label"
-                              title="Diff refreshed; this reference may be outdated."
-                            >
-                              STALE
-                            </span>
+                            <>
+                              <span className="stale-label">STALE</span>
+                              <button
+                                className="copy-location-btn"
+                                onClick={() => {
+                                  const info = `${comment.anchor!.filePath}:${comment.anchor!.startLine}-${comment.anchor!.endLine}`;
+                                  navigator.clipboard.writeText(info);
+                                  setCopySuccess(comment.id);
+                                  setTimeout(() => setCopySuccess(null), 2000);
+                                }}
+                              >
+                                {copySuccess === comment.id ? 'Copied!' : 'Copy'}
+                              </button>
+                            </>
                           )}
                         </div>
+                        {isAnchorStale(comment.anchor) && (
+                          <div className="stale-message">
+                            Diff refreshed; this quote may be outdated.
+                          </div>
+                        )}
                         <pre className="anchor-code mono">{comment.anchor.excerpt}</pre>
                       </div>
                     )}
