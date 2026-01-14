@@ -47,6 +47,11 @@ export function TaskList() {
     });
   };
 
+  const handleOpenPr = (event: React.MouseEvent, prUrl: string) => {
+    event.stopPropagation();
+    window.open(prUrl, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div className="task-list-page">
       <header className="page-header">
@@ -141,6 +146,24 @@ export function TaskList() {
             <div className="task-meta">
               <span className="mono">{task.branchName || 'no branch'}</span>
               <span className="date">{formatDate(task.updatedAt)}</span>
+            </div>
+            <div className="task-links">
+              <span className="task-link-label">PR</span>
+              {task.prUrl ? (
+                <>
+                  <button
+                    className="secondary open-pr-btn"
+                    onClick={(event) => handleOpenPr(event, task.prUrl!)}
+                  >
+                    Open PR
+                  </button>
+                  <span className="task-pr-url" title={task.prUrl}>
+                    {task.prUrl}
+                  </span>
+                </>
+              ) : (
+                <span className="task-pr-empty">Not set</span>
+              )}
             </div>
           </div>
         ))}

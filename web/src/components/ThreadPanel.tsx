@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTaskStore } from '../store/taskStore';
+import { parseDiff, extractExcerpt } from '../utils/diffParser';
 import type { ThreadWithComments } from '../api/types';
 import './ThreadPanel.css';
 
@@ -10,11 +11,29 @@ interface ThreadPanelProps {
 }
 
 export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps) {
-  const { createThreadWithComment, addComment, anchorSelection, setAnchorSelection } = useTaskStore();
+  const { createThreadWithComment, addComment, anchorSelection, setAnchorSelection, diff } = useTaskStore();
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const parsedDiff = useMemo(() => {
+    if (!diff?.diffText) return null;
+    return parseDiff(diff.diffText);
+  }, [diff?.id, diff?.diffText]);
+
+  const normalizeExcerpt = (value: string) => value.trim().replace(/\r\n/g, '\n');
+
+  const isAnchorStale = (anchor: { filePath: string; hunkIndex: number; startLine: number; endLine: number; excerpt: string; }) => {
+    if (!parsedDiff) return false;
+    const file = parsedDiff.files.find((diffFile) =>
+      diffFile.newPath === anchor.filePath || diffFile.oldPath === anchor.filePath
+    );
+    if (!file) return true;
+    const currentExcerpt = extractExcerpt(file, anchor.hunkIndex, anchor.startLine, anchor.endLine);
+    if (!currentExcerpt) return true;
+    return normalizeExcerpt(currentExcerpt) !== normalizeExcerpt(anchor.excerpt);
+  };
 
   // Filter threads based on mode
   const filteredThreads = threads.filter((thread) =>
@@ -119,15 +138,18 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
                 .map((comment, index) => (
                   <div key={comment.id} className={`comment ${index === 0 ? 'first' : ''}`}>
                     {index === 0 && comment.anchor && (
-                      <div className={`comment-anchor ${comment.anchor.stale ? 'stale' : ''}`}>
-                        <div className="anchor-header-row">
+                      <div className="comment-anchor">
+                        <div className="comment-anchor-header">
                           <span className="mono">{comment.anchor.filePath}</span>
                           <span className="anchor-range">
                             L{comment.anchor.startLine}-{comment.anchor.endLine}
                           </span>
-                          {comment.anchor.stale && (
-                            <span className="stale-badge" title="This reference may be outdated. The diff has changed since this comment was created.">
-                              ⚠️ Stale
+                          {isAnchorStale(comment.anchor) && (
+                            <span
+                              className="stale-label"
+                              title="Diff refreshed; this reference may be outdated."
+                            >
+                              STALE
                             </span>
                           )}
                         </div>

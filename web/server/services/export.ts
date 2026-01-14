@@ -12,11 +12,57 @@ export interface ExportResult {
   fileError: string | null;
 }
 
+interface ExportOptions {
+  publicBaseUrl?: string | null;
+}
+
+interface PublicBaseUrlOptions {
+  envBaseUrl?: string | null;
+  clientBaseUrl?: string | null;
+  requestBaseUrl?: string | null;
+}
+
+function sanitizeBaseUrl(input?: string | null): string | null {
+  if (!input) return null;
+  try {
+    const url = new URL(input);
+    if (!['http:', 'https:'].includes(url.protocol)) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+export function resolvePublicBaseUrl(options: PublicBaseUrlOptions): string | null {
+  return (
+    sanitizeBaseUrl(options.envBaseUrl) ||
+    sanitizeBaseUrl(options.clientBaseUrl) ||
+    sanitizeBaseUrl(options.requestBaseUrl) ||
+    null
+  );
+}
+
 /**
  * Generate PR draft markdown from task detail
  */
-export function generatePRDraft(task: TaskDetail): string {
+export function generatePRDraft(task: TaskDetail, options: ExportOptions = {}): string {
   const lines: string[] = [];
+  const baseUrl = options.publicBaseUrl?.replace(/\/$/, '') || null;
+  const taskUrl = baseUrl ? `${baseUrl}/task/${task.id}` : `/task/${task.id}`;
+
+  if (task.status === 'draft') {
+    lines.push('> ⚠️ DISCUSSION IN PROGRESS');
+    lines.push('> Do not comment code details in GitHub PR. Discuss in merge-room.');
+  } else {
+    lines.push('> ⚠️ Discussion happens in merge-room; PR is the ledger.');
+    lines.push('> Request review in GitHub after pasting this description.');
+  }
+  lines.push(`> merge-room task: ${taskUrl}`);
+  if (task.prUrl) {
+    const label = task.status === 'draft' ? 'Diff viewer' : 'PR';
+    lines.push(`> ${label}: ${task.prUrl}`);
+  }
+  lines.push('');
 
   // Title
   lines.push(`# ${task.title}`);
@@ -125,8 +171,8 @@ export function generatePRDraft(task: TaskDetail): string {
  * Export task to markdown file
  * Returns markdown even if file write fails
  */
-export function exportPRDraft(task: TaskDetail): ExportResult {
-  const markdown = generatePRDraft(task);
+export function exportPRDraft(task: TaskDetail, options: ExportOptions = {}): ExportResult {
+  const markdown = generatePRDraft(task, options);
   const fileName = `${task.id}.md`;
   const filePath = path.join(PR_DRAFTS_DIR, fileName);
 

@@ -3,7 +3,7 @@ import type { Task, TaskStatus, CreateTaskRequest, TaskDetail, ThreadWithComment
 
 export function getAllTasks(): Task[] {
   return db.prepare(`
-    SELECT id, title, description, repoPath, branchName, status, createdAt, updatedAt
+    SELECT id, title, description, repoPath, branchName, prUrl, status, createdAt, updatedAt
     FROM tasks
     ORDER BY updatedAt DESC
   `).all() as Task[];
@@ -11,7 +11,7 @@ export function getAllTasks(): Task[] {
 
 export function getTaskById(id: string): Task | null {
   return db.prepare(`
-    SELECT id, title, description, repoPath, branchName, status, createdAt, updatedAt
+    SELECT id, title, description, repoPath, branchName, prUrl, status, createdAt, updatedAt
     FROM tasks
     WHERE id = ?
   `).get(id) as Task | null;
@@ -59,9 +59,9 @@ export function createTask(data: CreateTaskRequest): Task {
   const now = new Date().toISOString();
 
   db.prepare(`
-    INSERT INTO tasks (id, title, description, repoPath, branchName, status, createdAt, updatedAt)
-    VALUES (?, ?, ?, ?, ?, 'draft', ?, ?)
-  `).run(id, data.title, data.description || null, data.repoPath, data.branchName || null, now, now);
+    INSERT INTO tasks (id, title, description, repoPath, branchName, prUrl, status, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, 'draft', ?, ?)
+  `).run(id, data.title, data.description || null, data.repoPath, data.branchName || null, null, now, now);
 
   // Initialize empty decision
   db.prepare(`
@@ -74,6 +74,12 @@ export function createTask(data: CreateTaskRequest): Task {
 export function updateTaskStatus(id: string, status: TaskStatus): Task | null {
   const now = new Date().toISOString();
   db.prepare(`UPDATE tasks SET status = ?, updatedAt = ? WHERE id = ?`).run(status, now, id);
+  return getTaskById(id);
+}
+
+export function updateTaskPrUrl(id: string, prUrl: string | null): Task | null {
+  const now = new Date().toISOString();
+  db.prepare(`UPDATE tasks SET prUrl = ?, updatedAt = ? WHERE id = ?`).run(prUrl, now, id);
   return getTaskById(id);
 }
 

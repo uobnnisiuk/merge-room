@@ -5,7 +5,7 @@ import * as threadsDb from '../db/threads.js';
 import * as decisionsDb from '../db/decisions.js';
 import * as anchorsDb from '../db/anchors.js';
 import { getWorkingTreeDiff, isGitRepo } from '../services/git.js';
-import { exportPRDraft } from '../services/export.js';
+import { exportPRDraft, resolvePublicBaseUrl } from '../services/export.js';
 import type { CreateTaskRequest, CreateCommentRequest, UpdateDecisionRequest, TaskStatus } from '../db/types.js';
 
 const router = Router();
@@ -152,6 +152,35 @@ router.post('/threads/:id/comments', (req: Request, res: Response) => {
   }
 });
 
+// PATCH /api/tasks/:id - Update task fields
+router.patch('/:id', (req: Request, res: Response) => {
+  try {
+    const task = tasksDb.getTaskById(req.params.id);
+    if (!task) {
+      res.status(404).json({ error: 'Task not found' });
+      return;
+    }
+
+    const { prUrl } = req.body as { prUrl?: string | null };
+    if (prUrl === undefined) {
+      res.status(400).json({ error: 'prUrl is required' });
+      return;
+    }
+
+    if (prUrl !== null && typeof prUrl !== 'string') {
+      res.status(400).json({ error: 'prUrl must be a string or null' });
+      return;
+    }
+
+    const normalizedPrUrl = typeof prUrl === 'string' ? prUrl.trim() || null : null;
+    const updated = tasksDb.updateTaskPrUrl(task.id, normalizedPrUrl);
+    res.json(updated);
+  } catch (err) {
+    console.error('Error updating task:', err);
+    res.status(500).json({ error: 'Failed to update task' });
+  }
+});
+
 // PATCH /api/tasks/:id/status - Update task status
 router.patch('/:id/status', (req: Request, res: Response) => {
   try {
@@ -215,7 +244,23 @@ router.post('/:id/export', (req: Request, res: Response) => {
       return;
     }
 
-    const result = exportPRDraft(task);
+    const { clientBaseUrl } = req.body as { clientBaseUrl?: string };
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    const forwardedHost = req.headers['x-forwarded-host'];
+    const protocol = Array.isArray(forwardedProto)
+      ? forwardedProto[0]
+      : forwardedProto?.split(',')[0] || req.protocol;
+    const host = Array.isArray(forwardedHost)
+      ? forwardedHost[0]
+      : forwardedHost?.split(',')[0] || req.headers.host;
+    const requestBaseUrl = host ? `${protocol}://${host}` : null;
+    const publicBaseUrl = resolvePublicBaseUrl({
+      envBaseUrl: process.env.PUBLIC_BASE_URL,
+      clientBaseUrl,
+      requestBaseUrl,
+    });
+
+    const result = exportPRDraft(task, { publicBaseUrl });
     res.json(result);
   } catch (err) {
     console.error('Error exporting:', err);

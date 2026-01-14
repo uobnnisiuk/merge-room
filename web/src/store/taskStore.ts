@@ -43,6 +43,7 @@ interface TaskStore {
   // Status & Decision
   updateStatus: (taskId: string, status: TaskStatus) => Promise<void>;
   updateDecision: (taskId: string, data: UpdateDecisionRequest) => Promise<void>;
+  updateTaskPrUrl: (taskId: string, prUrl: string | null) => Promise<void>;
 
   // Export
   exportMarkdown: string | null;
@@ -155,13 +156,26 @@ export const useTaskStore = create<TaskStore>((set, get) => ({
     await get().fetchTaskDetail(taskId);
   },
 
+  updateTaskPrUrl: async (taskId, prUrl) => {
+    const updated = await api.updateTask(taskId, { prUrl });
+    const { currentTask, tasks } = get();
+    set({
+      currentTask: currentTask && currentTask.id === taskId
+        ? { ...currentTask, prUrl: updated.prUrl, updatedAt: updated.updatedAt }
+        : currentTask,
+      tasks: tasks.map((task) =>
+        task.id === taskId ? { ...task, prUrl: updated.prUrl, updatedAt: updated.updatedAt } : task
+      ),
+    });
+  },
+
   // Export
   exportMarkdown: null,
   exportFilePath: null,
   exportFileError: null,
 
   exportPRDraft: async (taskId) => {
-    const result = await api.exportPRDraft(taskId);
+    const result = await api.exportPRDraft(taskId, window.location.origin);
     set({
       exportMarkdown: result.markdown,
       exportFilePath: result.filePath,
