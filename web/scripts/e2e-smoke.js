@@ -222,6 +222,47 @@ async function runTests() {
   assert(fileStat.size > 0, 'Export file should not be empty');
   console.log('[e2e] Export file verified:', exportFilePath);
 
+  // Step 13: Test anchor staleness detection
+  console.log('\n[e2e] Step 13: Testing anchor staleness detection...');
+
+  // First, verify anchor is NOT stale initially
+  let taskDetail = await api('GET', `/tasks/${task.id}`);
+  const initialAnchor = taskDetail.threads
+    .flatMap((t) => t.comments)
+    .find((c) => c.anchor && c.anchor.filePath === 'src/utils.js')?.anchor;
+  assert(initialAnchor, 'Should find the anchored comment');
+  assert.equal(initialAnchor.stale, false, 'Anchor should not be stale initially');
+  console.log('[e2e] Confirmed anchor is fresh initially');
+
+  // Modify demo-repo to remove the multiply function (the anchored excerpt)
+  // We'll revert the unstaged changes and create different content
+  execSync('git checkout -- src/utils.js', { cwd: DEMO_REPO_PATH, stdio: 'inherit' });
+  // Write completely different content to make the excerpt disappear
+  const newUtilsContent = `export function subtract(a, b) {
+  return a - b;
+}
+
+export function divide(a, b) {
+  return a / b;
+}
+`;
+  const fs = await import('fs');
+  fs.writeFileSync(join(DEMO_REPO_PATH, 'src', 'utils.js'), newUtilsContent);
+  console.log('[e2e] Modified demo-repo to remove the anchored excerpt');
+
+  // Refresh diff - this should mark the anchor as stale
+  await api('POST', `/tasks/${task.id}/refresh-diff`);
+  console.log('[e2e] Refreshed diff after modification');
+
+  // Verify anchor is now stale
+  taskDetail = await api('GET', `/tasks/${task.id}`);
+  const staleAnchor = taskDetail.threads
+    .flatMap((t) => t.comments)
+    .find((c) => c.anchor && c.anchor.filePath === 'src/utils.js')?.anchor;
+  assert(staleAnchor, 'Should still find the anchored comment');
+  assert.equal(staleAnchor.stale, true, 'Anchor should be stale after diff change');
+  console.log('[e2e] Anchor staleness detection passed - anchor correctly marked as stale');
+
   console.log('\n=== All E2E Tests Passed ===\n');
 }
 

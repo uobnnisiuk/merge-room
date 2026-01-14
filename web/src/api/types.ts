@@ -40,6 +40,7 @@ export interface Anchor {
   startLine: number;
   endLine: number;
   excerpt: string;
+  stale: boolean;
 }
 
 export interface Decision {

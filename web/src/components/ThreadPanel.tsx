@@ -119,11 +119,18 @@ export function ThreadPanel({ taskId, threads, isPrivateMode }: ThreadPanelProps
                 .map((comment, index) => (
                   <div key={comment.id} className={`comment ${index === 0 ? 'first' : ''}`}>
                     {index === 0 && comment.anchor && (
-                      <div className="comment-anchor">
-                        <span className="mono">{comment.anchor.filePath}</span>
-                        <span className="anchor-range">
-                          L{comment.anchor.startLine}-{comment.anchor.endLine}
-                        </span>
+                      <div className={`comment-anchor ${comment.anchor.stale ? 'stale' : ''}`}>
+                        <div className="anchor-header-row">
+                          <span className="mono">{comment.anchor.filePath}</span>
+                          <span className="anchor-range">
+                            L{comment.anchor.startLine}-{comment.anchor.endLine}
+                          </span>
+                          {comment.anchor.stale && (
+                            <span className="stale-badge" title="This reference may be outdated. The diff has changed since this comment was created.">
+                              ⚠️ Stale
+                            </span>
+                          )}
+                        </div>
                         <pre className="anchor-code mono">{comment.anchor.excerpt}</pre>
                       </div>
                     )}
