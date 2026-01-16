@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "echo 'Modifying file...'"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "if [[ \"$CLAUDE_TOOL_INPUT\" == *\".tsx\"* ]] || [[ \"$CLAUDE_TOOL_INPUT\" == *\".ts\"* ]]; then cd /home/user/merge-room/web && pnpm tsc --noEmit 2>&1 | head -20; fi"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "cd /home/user/merge-room && git status --porcelain | head -5"
+      }
+    ]
+  }
+}
