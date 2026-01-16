@@ -123,3 +123,33 @@ rm -rf web/data && pnpm dev
 - `docs/runbook.md` - Quick start, troubleshooting
 - `docs/notes.md` - Design decisions, future work
 - `docs/ja/` - Japanese translations
+
+## Rules
+
+1. **Always run typecheck after editing .ts/.tsx files**
+2. **Run E2E tests before committing significant changes**
+3. **Never commit web/data/ (database) - it's gitignored**
+4. **Use existing patterns** - follow code style in nearby files
+5. **Keep spike scope** - no auth, no multi-user, no real-time
+6. **Anchors are diff-relative** - not source file line numbers
+7. **Boolean in SQLite** - store as 0/1, convert with `Boolean()`
+8. **Japanese docs** - update docs/ja/ when updating docs/
+
+## Slash Commands
+
+| Command | Description |
+|---------|-------------|
+| `/dev` | Start development server |
+| `/test` | Run E2E smoke tests |
+| `/check` | Run typecheck + build + e2e |
+| `/reset-db` | Reset database to clean state |
+| `/add-endpoint` | Interactive API endpoint creation |
+
+## Agent Skills
+
+| Skill | Use When |
+|-------|----------|
+| `e2e-test` | Running or debugging E2E tests |
+| `anchor-system` | Working with anchors/staleness |
+| `database` | Database schema or queries |
+
